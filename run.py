@@ -10,14 +10,13 @@ import argparse
 # Your API key. Replace "YOUR_API_KEY" with your actual key.
 # You can get a key from Google AI Studio at https://aistudio.google.com/app/apikey
 # It's recommended to store this in an environment variable for security.
-API_KEY = "AIzaSyCA2t4H6VPWgK1Q27MASExuhZP_xBRFRjs"
 
-# API_KEY = os.environ.get("API_KEY")
-# if API_KEY:
-#     # Use the API key
-#     print("API Key loaded successfully!")
-# else:
-#     print("API Key not found.")
+API_KEY = os.environ.get("API_KEY")
+if API_KEY:
+    # Use the API key
+    print("API Key loaded successfully!")
+else:
+    print("API Key not found.")
 
 # pdb.set_trace()
 # The Gemini model for image generation and editing
@@ -132,10 +131,10 @@ def edit_image_with_gemini(image_path, prompt_text, output_path="edited_image.jp
 if __name__ == "__main__":
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Generate images with pedestrians and bicycles using Gemini API")
-    parser.add_argument("--input_image", "-i", type=str, default="background_images/CAM1.png", 
-                        help="Path to the input image (default: background_images/CAM1.png)")
+    parser.add_argument("--input_image", "-i", type=str, default="background_images/CAM3.png", 
+                        help="Path to the input image (default: background_images/CAM3.png)")
     parser.add_argument("--dest_folder", "-d", type=str, 
-                        default="output/CAM1_ped_bic_new_prompt/images",
+                        default="output/CAM3_ped_bic_new_prompt/images",
                         help="Destination folder for generated images")
     parser.add_argument("--num_images", "-n", type=int, default=200,
                         help="Number of images to generate (default: 200)")
@@ -148,7 +147,7 @@ if __name__ == "__main__":
     num_images_to_generate = args.num_images
 
     # Base name for output files
-    base_output_name = "generated_CAM3_pedestrian_bicycle"
+    base_output_name = "generated_CAM3"
     output_extension = ".png"
 
     print(f"Starting to generate {num_images_to_generate} images...")
