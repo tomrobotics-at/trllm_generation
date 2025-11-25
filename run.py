@@ -10,7 +10,7 @@ import argparse
 # Your API key. Replace "YOUR_API_KEY" with your actual key.
 # You can get a key from Google AI Studio at https://aistudio.google.com/app/apikey
 # It's recommended to store this in an environment variable for security.
-API_KEY = "AIzaSyCGLRPfgrgzWDURKHfFNHpUctTcAONmWuE"
+API_KEY = "AIzaSyCA2t4H6VPWgK1Q27MASExuhZP_xBRFRjs"
 
 # API_KEY = os.environ.get("API_KEY")
 # if API_KEY:
@@ -132,14 +132,14 @@ def edit_image_with_gemini(image_path, prompt_text, output_path="edited_image.jp
 if __name__ == "__main__":
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Generate images with pedestrians and bicycles using Gemini API")
-    parser.add_argument("--input_image", "-i", type=str, default="background_images/CAM3.png", 
-                        help="Path to the input image (default: background_images/CAM3.png)")
+    parser.add_argument("--input_image", "-i", type=str, default="background_images/CAM1.png", 
+                        help="Path to the input image (default: background_images/CAM1.png)")
     parser.add_argument("--dest_folder", "-d", type=str, 
-                        default="output/CAM3_ped_bic/images",
+                        default="output/CAM1_ped_bic_new_prompt/images",
                         help="Destination folder for generated images")
-    parser.add_argument("--num_images", "-n", type=int, default=100,
-                        help="Number of images to generate (default: 100)")
-    
+    parser.add_argument("--num_images", "-n", type=int, default=200,
+                        help="Number of images to generate (default: 200)")
+
     args = parser.parse_args()
     
     # --- Configuration ---
@@ -160,28 +160,79 @@ if __name__ == "__main__":
         os.makedirs(dest_folder)
 
     for i in range(num_images_to_generate):
-        # Dynamically generate the prompt for each iteration for greater variety
-        #num_cars = random.randint(0, 3)
-        #num_trucks = random.randint(2, 6)
-        #num_motorcycles = random.randint(10, 15)
-        #num_buses = random.randint(3, 7)
-        num_bicycles = random.randint(5, 10)
-        num_pedestrians = random.randint(7, 12)
+        # Create more balanced dataset by focusing on underrepresented classes
+        # Current distribution: Car: 72.07%, Pedestrian: 15.5%, Truck: 3.18%, Bicycle: 4.57%, Motorcycle: 2.45%, Bus: 2.23%
+        
+        # Generate different scenarios to balance the dataset
+        scenario = random.choice([
+            "bicycle_heavy",     # 30% of images - boost bicycles significantly
+            "pedestrian_heavy",  # 25% of images - boost pedestrians
+            "truck_bus_heavy",   # 20% of images - boost trucks and buses
+            "motorcycle_heavy",  # 15% of images - boost motorcycles
+            "mixed_balanced"     # 10% of images - mixed with minimal cars
+        ])
+        
+        if scenario == "bicycle_heavy":
+            num_bicycles = random.randint(8, 15)
+            num_pedestrians = random.randint(3, 6)
+            num_trucks = random.randint(1, 3)
+            num_buses = random.randint(0, 2)
+            num_motorcycles = random.randint(1, 3)
+            num_cars = random.randint(0, 2)  # Minimal cars
+            
+        elif scenario == "pedestrian_heavy":
+            num_pedestrians = random.randint(10, 18)
+            num_bicycles = random.randint(2, 5)
+            num_trucks = random.randint(1, 2)
+            num_buses = random.randint(0, 1)
+            num_motorcycles = random.randint(1, 2)
+            num_cars = random.randint(0, 3)  # Minimal cars
+            
+        elif scenario == "truck_bus_heavy":
+            num_trucks = random.randint(4, 8)
+            num_buses = random.randint(2, 5)
+            num_pedestrians = random.randint(3, 7)
+            num_bicycles = random.randint(2, 4)
+            num_motorcycles = random.randint(1, 3)
+            num_cars = random.randint(0, 2)  # Minimal cars
+            
+        elif scenario == "motorcycle_heavy":
+            num_motorcycles = random.randint(6, 12)
+            num_pedestrians = random.randint(4, 8)
+            num_bicycles = random.randint(2, 5)
+            num_trucks = random.randint(1, 3)
+            num_buses = random.randint(0, 2)
+            num_cars = random.randint(0, 3)  # Minimal cars
+            
+        else:  # mixed_balanced
+            num_pedestrians = random.randint(6, 10)
+            num_bicycles = random.randint(4, 7)
+            num_trucks = random.randint(2, 4)
+            num_buses = random.randint(1, 3)
+            num_motorcycles = random.randint(3, 6)
+            num_cars = random.randint(1, 4)  # Still minimal cars
+        
         editing_prompt = (
-            f"I have an imbalanced dataset and I need more images with pedestrians, and bicycles. "
-            f"Please add {num_pedestrians} pedestrians, and {num_bicycles} bicycles to this street scene."
-            f"Ensure the objects are proportionate to the scene and blend naturally with the environment. "
-            f"Make sure that the pedestrians are walking on the sidewalks and crossing at crosswalks."
-            f"Make sure that the bicycles are on the road and in bike lanes where available."
-            f"Make sure that the bicycles are driven by people wearing helmets."
-            f"Make sure that the objects that are far away are smaller in size to maintain perspective."
-            f"Also, include a few cars to maintain realism. The total number of vehicles should create a realistic traffic scene."
+            f"I have an imbalanced dataset and need to create a more balanced distribution of objects. "
+            f"Please add the following objects to this street scene: "
+            f"{num_pedestrians} pedestrians, {num_bicycles} bicycles, {num_trucks} trucks, "
+            f"{num_buses} buses, {num_motorcycles} motorcycles, and {num_cars} cars. "
+            f"Ensure all objects are proportionate to the scene and blend naturally with the environment. "
+            f"Guidelines: "
+            f"- Pedestrians should be on sidewalks, crosswalks, or designated walking areas "
+            f"- Bicycles should be in bike lanes, on roads, or bike paths with riders wearing helmets "
+            f"- Trucks and buses should be appropriately sized and positioned on roads "
+            f"- Motorcycles should be on roads with riders wearing helmets "
+            f"- Cars should be standard passenger vehicles on roads "
+            f"- Maintain realistic perspective with distant objects appearing smaller "
+            f"- Create a natural, realistic traffic scene with proper spacing between objects "
+            f"- Vary the poses, orientations, and positions of objects for diversity"
         )
 
         rand_num = random.randint(1000, 9999)
-        current_output_path = f"{base_output_name}_{i+1}_{rand_num}{output_extension}"
-        print(f"\n--- Generating image {i+1}/{num_images_to_generate} ---")
-        print(f"Using prompt: {editing_prompt}")
+        current_output_path = f"{base_output_name}_{scenario}_{i+1}_{rand_num}{output_extension}"
+        print(f"\n--- Generating image {i+1}/{num_images_to_generate} (Scenario: {scenario}) ---")
+        print(f"Objects: {num_pedestrians} pedestrians, {num_bicycles} bicycles, {num_trucks} trucks, {num_buses} buses, {num_motorcycles} motorcycles, {num_cars} cars")
         print(f"Output path for this image: {current_output_path}")
 
         edit_image_with_gemini(input_image_path, editing_prompt, current_output_path)
